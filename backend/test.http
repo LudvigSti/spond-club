@@ -1,0 +1,11 @@
+POST http://localhost:8080/api/submit
+Content-Type: application/json
+
+{
+  "formId": "spond-club-registration-123",
+  "name": "Ola Nordmann",
+  "email": "ola@nordmann.no",
+  "phone": "99887766",
+  "birthDate": "1995-05-15",
+  "memberType": "adult"
+}
