@@ -18,16 +18,17 @@ type MemberType struct {
 }
 
 type FormDetails struct {
-	ID              string       `json:"id"`
-	Title           string       `json:"title"`
-	Description     string       `json:"description"`
+	ID               string       `json:"id"`
+	Title            string       `json:"title"`
+	Description      string       `json:"description"`
 	RegistrationDate time.Time    `json:"registrationDate"`
-	MemberTypes     []MemberType `json:"memberTypes"`
+	MemberTypes      []MemberType `json:"memberTypes"`
 }
 
 type SubmissionInput struct {
 	FormID     string `json:"formId"`
-	Name       string `json:"name"`
+	FirstName  string `json:"firstName"`
+	LastName   string `json:"lastName"`
 	Email      string `json:"email"`
 	Phone      string `json:"phone"`
 	BirthDate  string `json:"birthDate"`
@@ -48,11 +49,25 @@ func main() {
 
 	err = dbPool.Ping(context.Background())
 	if err != nil {
-		log.Fatalf("Klarte ikke å pinge databasen. Er Docker-containeren i gang? %v\n", err)
+		log.Printf("ADVARSEL: Klarte ikke å pinge databasen: %v. Sjekk om Docker-containeren kjører.\n", err)
+	} else {
+		fmt.Println("🎉 Suksessfullt koblet til PostgreSQL i Docker!")
 	}
-	fmt.Println("🎉 Suksessfullt koblet til PostgreSQL i Docker!")
 
 	r := gin.Default()
+
+	r.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	})
 
 	r.GET("/api/form", func(c *gin.Context) {
 		form := FormDetails{
@@ -63,7 +78,6 @@ func main() {
 			MemberTypes: []MemberType{
 				{ID: "adult", Name: "Voksen (fylt 18 år)"},
 				{ID: "child", Name: "Barn (under 18 år)"},
-				{ID: "support", Name: "Støttemedlem"},
 			},
 		}
 		c.JSON(http.StatusOK, form)
@@ -71,16 +85,12 @@ func main() {
 
 	r.POST("/api/submit", func(c *gin.Context) {
 		var input SubmissionInput
-
 		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Ugyldig JSON-format"})
 			return
 		}
 
-		if strings.TrimSpace(input.Name) == "" ||
-		   strings.TrimSpace(input.Email) == "" ||
-		   strings.TrimSpace(input.Phone) == "" ||
-		   strings.TrimSpace(input.MemberType) == "" {
+		if strings.TrimSpace(input.FirstName) == "" || strings.TrimSpace(input.LastName) == "" || strings.TrimSpace(input.Email) == "" || strings.TrimSpace(input.Phone) == "" || strings.TrimSpace(input.MemberType) == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Alle felt må fylles ut"})
 			return
 		}
@@ -97,22 +107,13 @@ func main() {
 		}
 
 		query := `
-			INSERT INTO submissions (form_id, name, email, phone, birth_date, member_type)
-			VALUES ($1, $2, $3, $4, $5, $6)
+			INSERT INTO submissions (form_id, first_name, last_name, email, phone, birth_date, member_type)
+			VALUES ($1, $2, $3, $4, $5, $6, $7)
 		`
-
-		_, err = dbPool.Exec(context.Background(), query,
-			input.FormID,
-			input.Name,
-			input.Email,
-			input.Phone,
-			parsedBirthDate,
-			input.MemberType,
-		)
-
+		_, err = dbPool.Exec(context.Background(), query, input.FormID, input.FirstName, input.LastName, input.Email, input.Phone, parsedBirthDate, input.MemberType)
 		if err != nil {
 			log.Printf("Kunne ikke lagre til DB: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Kunne ikke lagre registreringen"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Kunne ikke lagre registreringen i databasen"})
 			return
 		}
 
