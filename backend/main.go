@@ -23,6 +23,7 @@ func main() {
 		c.Next()
 	})
 
+	r.GET("/health", healthHandler)
 	r.GET("/api/forms", getFormsHandler)
 	r.POST("/api/submit", submitFormHandler)
 

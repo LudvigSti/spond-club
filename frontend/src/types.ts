@@ -4,10 +4,11 @@ export interface MemberType {
 }
 
 export interface FormDetails {
-    id: string;
+    clubId: string;
+    formId: string;
     title: string;
     description: string;
-    registrationDate: string;
+    registrationOpens: string;
     memberTypes: MemberType[];
 }
 

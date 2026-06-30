@@ -8,11 +8,12 @@ type MemberType struct {
 }
 
 type FormDetails struct {
-	ID               string       `json:"id"`
+	ClubID           string       `json:"clubId"`
+	FormID           string       `json:"formId"`
 	Title            string       `json:"title"`
-	Description      string       `json:"description"`
-	RegistrationDate time.Time    `json:"registrationDate"`
-	MemberTypes     []MemberType `json:"memberTypes"`
+	Description      string       `json:"description,omitempty"`
+	RegistrationOpens time.Time    `json:"registrationOpens"`
+	MemberTypes      []MemberType `json:"memberTypes"`
 }
 
 type SubmissionInput struct {

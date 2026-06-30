@@ -5,10 +5,11 @@ import { FormDetails, FormData } from '../types'
 
 describe('StepPreview Component', () => {
     const mockForm: FormDetails = {
-        id: 'test-club',
-        title: 'Test Klubb',
-        description: 'En testbeskrivelse',
-        registrationDate: '2026-01-01T00:00:00Z',
+        clubId: 'britsport',
+        formId: 'B171388180BC457D9887AD92B6CCFC86', // FIX: Added formId
+        title: 'Test Club',
+        description: 'A test description',
+        registrationOpens: '2026-01-01T00:00:00Z', // FIX: Changed from registrationDate
         memberTypes: [{ id: 'player', name: 'Spiller' }]
     }
 

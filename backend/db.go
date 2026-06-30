@@ -69,10 +69,12 @@ func GetFormsFromDB() ([]FormDetails, error) {
 		var f FormDetails
 		var memberTypesJSON []byte
 
-		err := rows.Scan(&f.ID, &f.Title, &f.Description, &f.RegistrationDate, &memberTypesJSON)
+		err := rows.Scan(&f.ClubID, &f.Title, &f.Description, &f.RegistrationOpens, &memberTypesJSON)
 		if err != nil {
 			return nil, err
 		}
+
+		f.FormID = f.ClubID
 
 		if len(memberTypesJSON) > 0 {
 			_ = json.Unmarshal(memberTypesJSON, &f.MemberTypes)

@@ -14,33 +14,34 @@ function App() {
     useEffect(() => {
         axios.get('http://localhost:8080/api/forms')
             .then(response => {
-                setAllForms(response.data);
+                const data = Array.isArray(response.data) ? response.data : [response.data];
+                setAllForms(data);
                 setLoading(false);
             })
             .catch(err => {
                 console.error(err);
-                setError('Klarte ikke å hente klubblisten fra serveren.');
+                setError('Failed to fetch club data from server.');
                 setLoading(false);
             });
     }, []);
 
-    if (loading) return <div className="wizard-container">Laster Spond Club...</div>;
+    if (loading) return <div className="wizard-container">Loading Spond Club...</div>;
     if (error) return <div className="wizard-container error-banner">{error}</div>;
 
     if (!selectedForm) {
         return <ClubSelector allForms={allForms} onSelectForm={setSelectedForm} />;
     }
 
-    const isFuture = new Date(selectedForm.registrationDate) > new Date();
+    const isFuture = new Date(selectedForm.registrationOpens) > new Date();
     if (isFuture) {
         return (
             <div className="wizard-container" style={{ textAlign: 'center' }}>
                 <div className="error-banner" style={{ backgroundColor: '#fff9e6', color: '#b78103', border: '1px solid #ffcc00' }}>
-                    <h2>Registreringen har ikke åpnet ennå</h2>
-                    <p>Skjemaet for <strong>{selectedForm.title}</strong> åpner ikke før: <strong>{new Date(selectedForm.registrationDate).toLocaleDateString('no-NO')}</strong>.</p>
+                    <h2>Registration has not opened yet</h2>
+                    <p>The form for <strong>{selectedForm.title}</strong> opens on: <strong>{new Date(selectedForm.registrationOpens).toLocaleDateString('no-NO')}</strong>.</p>
                 </div>
                 <button className="btn btn-secondary" style={{ marginTop: '20px' }} onClick={() => setSelectedForm(null)}>
-                    Tilbake til klubboversikt
+                    Back to Overview
                 </button>
             </div>
         );

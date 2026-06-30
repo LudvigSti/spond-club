@@ -8,13 +8,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func healthHandler(c *gin.Context) {
+	c.String(http.StatusOK, "Sunlit")
+}
+
 func getFormsHandler(c *gin.Context) {
 	forms, err := GetFormsFromDB()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, forms)
+
+	if len(forms) > 0 {
+		c.JSON(http.StatusOK, forms)
+		return
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{"error": "No forms found"})
 }
 
 func submitFormHandler(c *gin.Context) {

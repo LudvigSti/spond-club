@@ -13,7 +13,7 @@ export function WizardForm({ selectedForm, onBackToCancel }: Props) {
     const [validationError, setValidationError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [formData, setFormData] = useState<FormData>({
-        formId: selectedForm.id,
+        formId: selectedForm.formId,
         firstName: '',
         lastName: '',
         email: '',
@@ -52,6 +52,8 @@ export function WizardForm({ selectedForm, onBackToCancel }: Props) {
             birthDate: formData.birthDate,
             memberType: formData.memberType
         };
+
+        console.log("Sending payload:", formData);
 
         axios.post('http://localhost:8080/api/submit', dataToSend)
             .then(() => setSuccess(true))
